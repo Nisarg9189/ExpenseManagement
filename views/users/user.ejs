@@ -1,0 +1,230 @@
+<% layout("/layouts/boilerplate.ejs") -%>
+<script>
+    let pending = <%- JSON.stringify(pending) %>;
+    let rejectedSum = <%- JSON.stringify(totalRejected) %>;
+    let approvedSum = <%- JSON.stringify(totalApproved) %>;
+    let rejectedCount = <%- JSON.stringify(rejected) %>;
+    let approvedCount = <%- JSON.stringify(approved) %>;
+    let userId = <%- JSON.stringify(user._id) %>;
+</script>
+  <div class="dashboard">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo">ExpenseHub</div>
+      <nav>
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <a href="http://localhost:8080/companies/<%= id %>/users/<%= user._id %>" class="nav-link active">
+              <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              </svg>
+              Dashboard
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Header -->
+      <header class="header">
+        <h1 class="header-title">My Dashboard</h1>
+        <div class="user-profile">
+          <div class="avatar">
+            <a href="/companies/<%= id %>/users/<%= user._id %>/details">
+              <%= user.name[0] %>
+            </a>
+          </div>
+          <div>
+            <div style="font-weight: 600; font-size: 0.875rem;">
+              <%= user.name %>
+            </div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary);">
+              <%= moment(user.createdAt).format("ll") %>
+            </div>
+          </div>
+          <div class="logout-btn">
+            <form method="post" action="/auth/logout">
+              <button>Logout</button>
+            </form>
+          </div>
+        </div>
+      </header>
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total Expenses</div>
+          <div class="stat-value">&#8377;<%= totalExpenseDetails.totalExpenseRised ?
+              totalExpenseDetails.totalExpenseRised : 0 %>
+          </div>
+          <div class="stat-change">your total</div>
+        </div>
+        <div class="stat-card warning">
+          <div class="stat-label">Pending</div>
+          <div class="stat-value" id="userPendingCount">
+            <%= pending %>
+          </div>
+          <div class="stat-change">Total: &#8377;<%= totalPending %>
+          </div>
+        </div>
+        <div class="stat-card success">
+          <div class="stat-label">Approved</div>
+          <div class="stat-value" id="userApprovedCount">
+            <%= approved %>
+          </div>
+          <div class="stat-change" id="UserApprovedSum">Total: &#8377;<%= totalApproved %>
+          </div>
+        </div>
+        <div class="stat-card danger">
+          <div class="stat-label">Rejected</div>
+          <div class="stat-value" id="userRejectedCount">
+            <%= rejected %>
+          </div>
+          <div class="stat-change" id="UserRejectedSum">Total: &#8377;<%= totalRejected %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Action -->
+      <div class="quick-action">
+        <h2>Submit a New Expense</h2>
+        <p>Quickly submit your expense claims for approval</p>
+        <button class="btn btn-primary" onclick="openModal('submitExpenseModal')">
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Submit Expense
+        </button>
+      </div>
+
+      <!-- Recent Expenses -->
+      <div class="content-grid">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">All Expenses</h2>
+            <!-- <button class="btn btn-outline">View All</button> -->
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Category</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                  <!-- <th>Actions</th> -->
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% for(let expenseDetail of expenseDetails) { %>
+                  <tr data-id="<%= expenseDetail._id %>">
+                    <td><strong>
+                        <%= expenseDetail.title %>
+                      </strong></td>
+                    <td>
+                      <%= expenseDetail.category %>
+                    </td>
+                    <td id="amt">&#8377;<%= expenseDetail.amount %>
+                    </td>
+                    <!-- <td><span class="badge badge-pending">Pending</span></td> -->
+                    <% if(expenseDetail.status.toLowerCase()==="pending" ) { %>
+                      <td><span class="badge badge-pending">PENDING</span></td>
+                      <% } else if(expenseDetail.status.toLowerCase()==="approved" ) { %>
+                        <td><span class="badge badge-approved">APPROVED</span></td>
+                        <% } else { %>
+                          <td><span class="badge badge-rejected">REJECTED</span></td>
+                          <% } %>
+                            <td>
+                              <%= moment(expenseDetail.date).format("ll") %>
+                            </td>
+                            <td>
+                              <!-- <button class="btn btn-outline" style="padding: 0.375rem 0.75rem;" onclick="viewExpense('expense1')">View</button> -->
+                              <%= expenseDetail.description %>
+                            </td>
+                  </tr>
+                  <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Submit Expense Modal -->
+  <div id="submitExpenseModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Submit New Expense</h3>
+        <button class="modal-close" onclick="closeModal('submitExpenseModal')">×</button>
+      </div>
+      <div class="modal-body">
+        <form method="post" action="/companies/<%= user.companyId %>/admins/<%= user.adminId %>/users/<%= user._id %>"
+          enctype="multipart/form-data">
+          <div class="form-group">
+            <label class="form-label">Title</label>
+            <input type="text" class="form-input" placeholder="e.g., Client Meeting Dinner" name="expense[title]"
+              required>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Amount</label>
+              <input type="number" class="form-input" placeholder="0.00" step="0.01" name="expense[amount]" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Currency</label>
+              <select class="form-select" required>
+                <option value="INR">INR</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Category</label>
+              <select class="form-select" name="expense[category]" required>
+                <option value="">Select category</option>
+                <option value="meals">Meals & Entertainment</option>
+                <option value="travel">Travel</option>
+                <option value="supplies">Office Supplies</option>
+                <option value="software">Software & Tools</option>
+                <option value="transportation">Transportation</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Date</label>
+              <input type="date" class="form-input" name="expense[date]" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Upload Bill Photo</label>
+            <input type="file" class="form-input" name="expense[image]" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea class="form-textarea" placeholder="Provide details about this expense..."
+              name="expense[description]" required></textarea>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal('submitExpenseModal')">Cancel</button>
+            <button class="btn btn-primary">Submit Expense</button>
+          </div>
+        </form>
+      </div>
+      <!-- <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('submitExpenseModal')">Cancel</button>
+        <button class="btn btn-primary">Submit Expense</button>
+      </div> -->
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/user/user.js"></script>

@@ -1,0 +1,366 @@
+<% layout("/layouts/boilerplate.ejs") -%>
+<script>
+  let pendingReq = <%- JSON.stringify(pendingCount) %>;
+  let managerId = "<%- manager._id %>";
+</script>
+  <div class="dashboard">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo">ExpenseHub</div>
+      <nav>
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <a href="http://localhost:8080/companies/<%= id %>/managers/<%= manager._id %>" class="nav-link active">
+              <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              </svg>
+              Dashboard
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a href="http://localhost:8080/companies/<%= id %>/managers/<%= manager._id %>/user" class="nav-link active">
+              <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+              Users
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Header -->
+      <header class="header">
+        <h1 class="header-title">Manager Dashboard</h1>
+        <div class="user-profile">
+          <div class="avatar">
+            <a href="http://localhost:8080/companies/<%= user.companyId %>/admins/<%= user.adminId %>/users/<%= user._id %>/expenses/managers"><%= manager.name[0] %></a>
+          </div>
+          <div>
+            <div style="font-weight: 600; font-size: 0.875rem;">
+              <%= manager.name %>
+            </div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary);">
+              <%= moment(manager.createdAt).format("ll") %>
+            </div>
+          </div>
+          <div class="logout-btn">
+            <form method="post" action="/auth/logout">
+              <button>Logout</button>
+            </form>
+          </div>
+        </div>
+      </header>
+
+      <!-- Alert -->
+      <% if(pendingCount) { %>
+        <div class="alert alert-warning" id="defaultPendingCount">
+          <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <div>
+            <strong>Action Required:</strong> You have <%= pendingCount %> expenses waiting for your approval.
+          </div>
+        </div>
+        <% } %>
+      
+        <div class="alert alert-warning" style="display: none;" id="alert">
+          <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-top: 4px;">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+            <div>
+            <strong>Action Required:</strong> You have <span id="pendingAlert"></span> expenses waiting for your approval.
+            </div>
+        </div>
+
+          <!-- Stats -->
+          <div class="stats-grid">
+            <div class="stat-card warning">
+              <div class="stat-label">Pending Approvals</div>
+              <div class="stat-value" id="managerPendingExpense">
+                <%= pendingCount %>
+              </div>
+              <div class="stat-change">Action Require</div>
+            </div>
+            <div class="stat-card success">
+              <div class="stat-label">Approved This Month</div>
+              <div class="stat-value">
+                <%= approvedCount %>
+              </div>
+              <div class="stat-change" id="totalManagerApproved">Total: &#8377;<%= totalExpenseDetails.totalApproved %>
+              </div>
+            </div>
+            <div class="stat-card danger">
+              <div class="stat-label">Rejected This Month</div>
+              <div class="stat-value">
+                <%= rejectedCount %>
+              </div>
+              <div class="stat-change" id="totalManagerRejected">Total: &#8377;<%= totalExpenseDetails.totalRejected %>
+              </div>
+            </div>
+            <!-- <div class="stat-card">
+              <div class="stat-label">Team Members</div>
+              <div class="stat-value">
+                
+              </div>
+              <div class="stat-change">Active employees</div>
+            </div> -->
+          </div>
+
+          <!-- new expense  -->
+          <div class="quick-action">
+            <h2>Submit a New Expense</h2>
+            <p>Quickly submit your expense claims for approval</p>
+            <button class="btn btn-primary" onclick="openModal('submitExpenseModal')">
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              Submit Expense
+            </button>
+          </div>
+
+
+
+          <!-- Pending Approvals -->
+          <div class="content-grid">
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">Pending Approvals</h2>
+                <span class="badge badge-warning" id="tablePendingCount" style="padding: 0.5rem 1rem;" id="managerPendingExpense">
+                  <%= pendingCount %> Pending
+                </span>
+              </div>
+              <div class="table-container" id="reviewTable">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Title</th>
+                      <th>Employee</th>
+                      <th>Category</th>
+                      <th>Amount</th>
+                      <th>Date</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% for(let pendingReq of pendingUsers) { %>
+                      <tr>
+                        <td><strong>
+                            <%= pendingReq.title ? pendingReq.title : "N/A" %>
+                          </strong>
+                        </td>
+                        <td>
+                          <%= pendingReq.userId ? pendingReq.userId.name : "N/A" %>
+                        </td>
+                        <td>
+                          <%= pendingReq.category ? pendingReq.category : "N/A" %>
+                        </td>
+                        <td>
+                          &#8377;<%= pendingReq.amount ? pendingReq.amount : "N/A" %>
+                        </td>
+                        <td>
+                          <%= pendingReq.date ? moment(pendingReq.date).format('ll') : "N/A" %>
+                        </td>
+                        <td>
+                          <div class="action-buttons">
+                            <button class="btn btn-outline" style="padding: 0.375rem 0.75rem;"
+                              data-id="<%= pendingReq._id %>" 
+                              onclick="reviewExpense(this)">Review</button>
+                          </div>
+                        </td>
+                      </tr>
+                      <% } %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Recent Team Expenses -->
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">Recent Team Expenses</h2>
+                <button class="btn btn-outline">View All</button>
+              </div>
+              <div class="table-container">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Title</th>
+                      <th>Employee</th>
+                      <th>Amount</th>
+                      <th>Status</th>
+                      <th>Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% for(let approvedAndRejectedUser of approvedAndRejectedUsers) { %>
+                      <tr>
+                        <td><strong>
+                            <%= approvedAndRejectedUser.title ? approvedAndRejectedUser.title : "N/A" %>
+                          </strong></td>
+                        <td>
+                          <%= approvedAndRejectedUser.userId ? approvedAndRejectedUser.userId.name : "N/A" %>
+                        </td>
+                        <td>
+                          &#8377;<%= approvedAndRejectedUser.amount ? approvedAndRejectedUser.amount : "N/A" %>
+                        </td>
+                        <% if(approvedAndRejectedUser.status.toLowerCase()==="approved" ) { %>
+                          <td><span class="badge badge-approved">APPROVED</span></td>
+                          <% } else { %>
+                            <td><span class="badge badge-rejected">REJECTED</span></td>
+                            <% } %>
+                              </td>
+                              <td>
+                                <%= approvedAndRejectedUser.date ? moment(approvedAndRejectedUser.date).format('ll')
+                                  : "N/A" %>
+                              </td>
+                      </tr>
+                      <% } %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+    </main>
+  </div>
+
+  <!-- Review Expense Modal -->
+  <div id="reviewExpenseModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Review Expense</h3>
+        <button class="modal-close" onclick="closeModal('reviewExpenseModal')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="expense-detail">
+          <div class="detail-row">
+            <span class="detail-label">Title</span>
+            <span class="detail-value" id="expense-title">-</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Employee</span>
+            <span class="detail-value" id="expense-employee">-</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Amount</span>
+            <span class="detail-value" id="expense-amount">-</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Category</span>
+            <span class="detail-value" id="expense-category">-</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Date</span>
+            <span class="detail-value" id="expense-date">-</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Description</span>
+            <span class="detail-value" id="expense-description" style="text-align: right;">-</span>
+          </div>
+        </div>
+
+        <div class="card img-div">
+          <img src="" class="card-img" alt="Bill Image" id="billImage">
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('reviewExpenseModal')">Cancel</button>
+        <form class="rejectForm"
+          action="/companies/<%= manager.companyId %>/managers/<%= manager._id %>/reject?_method=PATCH" method="post">
+          <button class="btn btn-danger" id="reject" data-id="" onclick="rejectExpense(this)">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            Reject
+            <input type="hidden" id="rejectId" name="rejectedUserId">
+          </button>
+        </form>
+
+        <form action="/companies/<%= manager.companyId %>/managers/<%= manager._id %>/approve?_method=PATCH"
+          method="post">
+          <button class="btn btn-secondary" id="approve" onclick="approveExpense(this)">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            Approve
+            <input type="hidden" id="approvedId" name="approvedUserId">
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- submit new expense -->
+  <div id="submitExpenseModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Submit New Expense</h3>
+        <button class="modal-close" onclick="closeModal('submitExpenseModal')">×</button>
+      </div>
+      <div class="modal-body">
+        <form action="/companies/<%= manager.companyId %>/admins/<%= manager.adminId %>/managers/<%= manager._id %>"
+          method="post" enctype="multipart/form-data">
+          <div class="form-group">
+            <label class="form-label">Title</label>
+            <input type="text" class="form-input" placeholder="e.g., Client Meeting Dinner" name="expense[title]"
+              required>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Amount</label>
+              <input type="number" class="form-input" placeholder="0.00" step="0.01" name="expense[amount]" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Currency</label>
+              <select class="form-select" required>
+                <option value="INR">INR</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Category</label>
+              <select class="form-select" name="expense[category]" required>
+                <option value="">Select category</option>
+                <option value="meals">Meals & Entertainment</option>
+                <option value="travel">Travel</option>
+                <option value="supplies">Office Supplies</option>
+                <option value="software">Software & Tools</option>
+                <option value="transportation">Transportation</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Date</label>
+              <input type="date" class="form-input" name="expense[date]" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Upload Bill Photo</label>
+            <input type="file" class="form-input" name="expense[image]">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea class="form-textarea" placeholder="Provide details about this expense..."
+              name="expense[description]" required></textarea>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline" onclick="closeModal('submitExpenseModal')">Cancel</button>
+            <button type="submit" class="btn btn-primary">Submit Expense</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/manager/manager.js"></script>

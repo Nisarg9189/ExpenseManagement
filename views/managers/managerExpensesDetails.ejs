@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="/css/admin.css">
+    <link rel="stylesheet" href="/css/userProfileCard.css">
+</head>
+<body>
+        <aside class="sidebar">
+      <div class="logo">User Expenses</div>
+      <nav>
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <a href="http://localhost:8080/companies/<%= id %>/managers/<%= manager._id %>" class="nav-link active">
+              <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              </svg>
+              Dashboard
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </aside>
+
+    <div class="container detailsContainer">
+         <!-- Info Grid -->
+          <div class="expenseDetails">
+        <div class="content-grid">
+            
+            <!-- User Details -->
+            <div class="card">
+                <h2 class="card-title">User Details</h2>
+                <div class="info-row">
+                    <span class="info-label">Full Name</span>
+                    <span class="info-value"><%= user.name %></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Email</span>
+                    <span class="info-value"><%= user.email %></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Role</span>
+                    <span class="info-value">
+                        
+                            MANAGER
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Company</span>
+                    <span class="info-value"><%= user.companyId?.name || "N/A" %></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Assign Manager</span>
+                    <span class="info-value"><%= user.managerId?.name || "N/A" %></span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Assign Manager Email</span>
+                    <span class="info-value"><%= user.managerId?.email || "N/A" %></span>
+                </div>
+            </div>
+
+            <!-- Expense Summary -->
+            <div class="card">
+                <h2 class="card-title">Expense Summary</h2>
+                <div class="info-row">
+                    <span class="info-label">Total Expenses</span>
+                    <span class="info-value amount-positive">&#8377;<%= totalExpenseDetails.totalExpenseRised ? totalExpenseDetails.totalExpenseRised : 0 %></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Pending Expenses</span>
+                    <span class="info-value">&#8377;<%= totalExpenseDetails.totalPending ? totalExpenseDetails.totalPending : 0 %></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Approved Expenses</span>
+                    <span class="info-value amount-positive">&#8377;<%= totalExpenseDetails.totalApproved ? totalExpenseDetails.totalApproved : 0 %></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Rejected Expenses</span>
+                    <span class="info-value">&#8377;<%= totalExpenseDetails.totalRejected ? totalExpenseDetails.totalRejected : 0 %></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Expenses Table -->
+        <div class="card full-width">
+            <h2 class="card-title">Recent Expenses</h2>
+            <table class="expense-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Category</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% for(let detail of details) { %>
+                    <tr>
+                        <td><%= moment(detail.date).format('ll') %></td>
+                        <td><%= detail.description %></td>
+                        <td><%= detail.category %></td>
+                        <td class="amount-positive">&#8377;<%= detail.amount %></td>
+                        <% if(detail.status.toLowerCase()==="pending" ) { %>
+                      <td><span class="status-badge status-pending">PENDING</span></td>
+                      <% } else if(detail.status.toLowerCase()==="approved" ) { %>
+                        <td><span class="status-badge status-approved">APPROVED</span></td>
+                        <% } else { %>
+                          <td><span class="status-badge status-rejected">REJECTED</span></td>
+                          <% } %>
+                        <!-- <td><span class="status-badge status-approved">Approved</span></td> -->
+                    </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+</body>
+</html>

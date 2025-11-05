@@ -1,0 +1,318 @@
+<% layout("/layouts/boilerplate.ejs") -%>
+<script>
+    let pendingCount = <%- JSON.stringify(pendingCount) %>;
+    let totalExp = <%- JSON.stringify(totalSum) %>;
+    let pending = <%- JSON.stringify(pendingCount) %>
+    let reject = <%- JSON.stringify(rejectedCount) %>
+    let rejectedSum = <%- JSON.stringify(rejectedSum) %>
+    let adminId = <%- JSON.stringify(adminId) %>;
+</script>
+  <div class="dashboard">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo">ExpenseHub</div>
+      <nav>
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <a href="http://localhost:8080/companies/<%= id %>/admins/<%= adminId %>" class="nav-link active">
+              <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              </svg>
+              Dashboard
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a href="http://localhost:8080/companies/<%= id %>/admins/<%= adminId %>/users/details" class="nav-link active">
+              <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+              Users
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Header -->
+      <header class="header">
+        <h1 class="header-title">Admin Dashboard</h1>
+        <div class="user-profile">
+          <div class="avatar">
+            <!-- users[0]?.adminId?.name?.[0] || "N/A"  -->
+            <a href="http://localhost:8080/companies/<%= id %>/admins/<%= adminId %>/profile"><%= admin.name[0] %></a>
+          </div>
+          <div>
+            <div style="font-weight: 600; font-size: 0.875rem;">
+              <!-- users[0]?.adminId?.name || "N/A"  -->
+              <%= admin.name %>
+            </div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary);">
+              <!-- users[0]?.adminId?.email || "N/A" -->
+              <%= moment(admin.createdAt).format("ll") %>
+            </div>
+          </div>
+          <div class="logout-btn">
+            <form method="post" action="/auth/logout">
+              <button>Logout</button>
+            </form>
+          </div>
+        </div>
+      </header>
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total Users</div>
+          <div class="stat-value">
+            <%= users.length %>
+          </div>
+          <div class="stat-change">Company : <%= company.name %></div>
+        </div>
+        <div class="stat-card success">
+          <div class="stat-label">Total Expenses</div>
+          <div class="stat-value" id="totalExpense">&#8377;<%= totalSum %>
+          </div>
+          <div class="stat-change">Your total</div>
+        </div>
+        <div class="stat-card warning">
+          <div class="stat-label">Pending Approvals</div>
+          <div class="stat-value" id="pendingCnt">
+            <%= pendingCount %>
+          </div>
+          <div class="stat-change">Action Require</div>
+        </div>
+        <div class="stat-card danger">
+          <div class="stat-label">Rejected Claims</div>
+          <div class="stat-value" id="rejectedCount">
+            <%= rejectedCount %>
+          </div>
+          <div class="stat-change" id="rejectedSum">Total: &#8377;<%= rejectedSum %></div>
+        </div>
+      </div>
+
+      <!-- User Management -->
+      <div class="content-grid">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">User Management</h2>
+            <button class="btn btn-primary" onclick="openModal('addUserModal')">
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              Add User
+            </button>
+          </div>
+          <div class="table-container" id="userTable">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Manager</th>
+                  <th>Created</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% for(let user of users) { %>
+                  <tr>
+                    <td><strong>
+                        <%= user.name %>
+                      </strong></td>
+                    <td>
+                      <%= user.email %>
+                    </td>
+                    <% if(user.role.toLowerCase()==="manager" ) { %>
+                      <td><span class="badge badge-manager">MANAGER</span></td>
+                      <% } else { %>
+                        <td><span class="badge badge-user">EMPLOYEE</span></td>
+                        <% } %>
+                          <td>
+                            <%= user.managerId?.name || "N/A" %>
+                          </td>
+                          <td>
+                            <%= moment(user.createdAt).format('ll') %>
+                          </td>
+                          <td>
+                            <div class="action-buttons">
+
+                              <!-- <button class="btn btn-outline" style="padding: 0.375rem 0.75rem;" onclick='(edit)'>Edit</button> -->
+
+                              <button class="btn btn-outline" style="padding: 0.375rem 0.75rem;"
+                                data-id="<%= user._id %>"
+                                onclick="edit(this)">
+                                Edit
+                              </button>
+
+                              <form method="POST"
+                                action="/companies/<%= id %>/admins/<%= adminId %>/users/<%= user._id %>/delete?_method=DELETE">
+                                <button class="btn btn-danger" style="padding: 0.375rem 0.75rem;">Delete</button>
+                              </form>
+                            </div>
+                          </td>
+                  </tr>
+                  <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Recent Expenses -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Recent Expenses</h2>
+            <!-- <button class="btn btn-outline">View All</button> -->
+          </div>
+          <div class="table-container">
+            <table id="expenseTable">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Employee</th>
+                  <th>Category</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                  <!-- <th>Actions</th> -->
+                </tr>
+              </thead>
+              <tbody>
+                <% for(let exp of expenses) { %>
+                  <tr data-id="<%= exp._id %>">
+                    <td><strong>
+                        <%= exp.title %>
+                      </strong></td>
+                    <td>
+                      <%= exp.userId.name %>
+                    </td>
+                    <td>
+                      <%= exp.category %>
+                    </td>
+                    <td id="amt">
+                      <%= exp.amount ? `₹${exp.amount}` : 'Not added yet' %>
+                    </td>
+                    </td>
+                    <% if(exp.status.toLowerCase()==="pending" ) { %>
+                      <td><span class="badge badge-pending">PENDING</span></td>
+                      <% } else if(exp.status.toLowerCase()==="approved" ) { %>
+                        <td><span class="badge badge-approved">APPROVED</span></td>
+                        <% } else { %>
+                          <td><span class="badge badge-rejected">REJECTED</span></td>
+                          <% } %>
+                            <td>
+                              <%= moment(exp.date).format("ll") %>
+                            </td>
+                            <!-- <td> <a class="btn btn-outline" style="padding: 0.375rem 0.75rem;" href="http://localhost:8080/companys/user/<%= exp.userId._id %>/details">View</a> </td> -->
+                  </tr>
+                  <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Add User Modal -->
+  <div id="addUserModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Add New User</h3>
+        <button class="modal-close" onclick="closeModal('addUserModal')">×</button>
+      </div>
+      <div class="modal-body">
+        <form method="POST" action="/companies/<%= id %>/admins/<%= adminId %>">
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input type="text" class="form-input" placeholder="Enter full name" name="expense[name]">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-input" placeholder="Enter email address" name="expense[email]" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" class="form-input" placeholder="Enter password" name="expense[password]" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Role</label>
+            <select class="form-select" name="expense[role]" required>
+              <option value="">Select role</option>
+              <option value="user">Employee</option>
+              <option value="manager">Manager</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Assign Manager</label>
+            <select class="form-select" name="expense[managerId]">
+
+              <option value="">Select manager</option>
+              <% for(let manager of managers) { %>
+                <option value="<%= manager._id %>">
+                  <%= manager.name %>
+                </option>
+                <% } %>
+            </select>
+          </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('addUserModal')">Cancel</button>
+
+        <button class="btn btn-primary">Create User</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Edit User Modal -->
+  <div id="editUserModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Edit User</h3>
+        <button class="modal-close" onclick="closeModal('editUserModal')">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="editUserForm" method="post">
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input type="text" class="form-input" id="editName" placeholder="Enter full name" name="expense[name]">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Role</label>
+            <select class="form-select" id="editRole" name="expense[role]" required>
+              <option value="">Select role</option>
+              <option value="user">Employee</option>
+              <option value="manager">Manager</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Assign Manager</label>
+            <select class="form-select" id="editManager" name="expense[managerId]" required>
+
+              <option value="">Select manager</option>
+              <% for(let manager of managers) { %>
+                <option value="<%= manager._id %>">
+                  <%= manager.name %>
+                </option>
+                <% } %>
+            </select>
+          </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary">Edit User</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/admin/admin.js"></script>
