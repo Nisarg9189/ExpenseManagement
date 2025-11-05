@@ -31,6 +31,14 @@ module.exports.index = async (req, res) => {
   ])
 
   console.log(totalExpenseDetails);
+  if(totalExpenseDetails.length === 0) {
+    totalExpenseDetails.push({
+      totalExpenseRised: 0,
+      totalApproved: 0,
+      totalRejected: 0,
+      totalPending: 0
+    });
+  }
   let totalRejected = totalExpenseDetails[0].totalRejected;
   let totalApproved = totalExpenseDetails[0].totalApproved;
   let totalPending = totalExpenseDetails[0].totalPending;
