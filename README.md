@@ -106,7 +106,7 @@ Notes:
 
    npm start
 
-5. Open https://expensemanagement-e6i4.onrender.com in your browser.
+5. Open http://localhost:8080 in your browser.
 
 The server listens on port `8080` by default (see `app.js`).
 
@@ -122,19 +122,6 @@ The server listens on port `8080` by default (see `app.js`).
 - Current implementation:
   - service: `gmail`
   - credentials are hard-coded in `utils/emailTransporter.js` (email and app password).
-
-Important security note: do not store credentials in source control. Replace the hard-coded credentials with variables using `process.env.EMAIL_USER` and `process.env.EMAIL_PASS`. Example (recommended change to `utils/emailTransporter.js`):
-
-```js
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
-module.exports.transporter = transporter;
-```
 
 The code currently sends emails for actions like account creation, user deletion, and user edit. Some calls are commented out—enable/adjust as needed.
 
@@ -238,26 +225,10 @@ Example block to include in README for quick testers:
 Quick demo steps
 
 1. Open the Live demo: https://expensemanagement-e6i4.onrender.com
-2. Click Sign Up and create a company + admin (or use seeded accounts if available).
+2. Click Sign Up and create a company + admin
 3. Create managers and users from the Admin dashboard.
 4. Sign-in as a User and submit an expense (attach a receipt). Then sign in as the assigned Manager to review/approve/reject and watch real-time updates.
 ```
-
-- Add a short Deployment / CI section showing how to deploy (Render, Heroku, Vercel for static front-end + server elsewhere), or include your GitHub Actions workflow if you use CI/CD.
-- Add badges at the top of README (optional): Node version, build status, license, and live demo. Example markup:
-
-```
-[![Node.js](https://img.shields.io/badge/node-24.8.0-brightgreen)]()
-[![Live demo](https://img.shields.io/badge/demo-online-blue)](https://expensemanagement-e6i4.onrender.com)
-```
-
-- Add a short **Features / Highlights** section at the top (1–2 lines) so visitors immediately see real-time updates, image uploads, role-based auth, and email notifications.
-
-If you'd like, I can:
-- Add a `screenshots/` folder and insert sample screenshot links (you'd need to upload images or give me images to add).
-- Add a `seed` script to create a demo company + admin + manager + user and document quick demo credentials.
-- Add a small `CONTRIBUTING.md` with how to run the app locally and how to prepare PRs.
-
 ---
 
 Thanks for using ExpenseHub — this README documents current behavior (server, socket events, and email flows) and suggests a few immediate security improvements.
