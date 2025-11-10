@@ -71,12 +71,8 @@
         }
 
         .detailsContainer {
-            margin-left: 26rem;
-            width: 100%;
-        }
-
-        .expenseDetails {
-            width: 100vh;
+            margin-left: 22rem;
+            width: -webkit-fill-available;
         }
 
         .card-title {
