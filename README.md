@@ -198,6 +198,13 @@ This setup allows immediate updates without page refresh.
 - Uses `passport-local` + `passport-local-mongoose` with the `User` model.
 - Sessions are configured with `express-session` and persisted in MongoDB using `connect-mongo`.
 
+Authentication & Authorization (status)
+
+- Authentication: Completed. The application uses `passport-local` with `passport-local-mongoose` for secure username/password authentication. The middleware `isLoggedIn` (in `utils/authentication.js`) is used to protect routes and ensure users are authenticated before accessing protected pages.
+- Authorization: Completed. Role-based access control is enforced throughout the controllers and routes — Admin, Manager and User roles are checked before performing privileged actions (for example, only Managers can approve/reject team expenses, Admins can manage users/managers/company data). Inspect `controllers/*` and `routes/*` for specific role checks and enforcement points.
+
+If you'd like, I can add explicit middleware helpers like `isAdmin`, `isManager`, `isOwner` to centralize role checks and show example usage.
+
 ## Routes & controllers (high-level)
 
 - `/auth` — registration and login (see `controllers/auth.js`).
@@ -217,26 +224,39 @@ Use the `routes/` files to see full endpoint lists and middleware.
   - Restrict Cloudinary and email account access.
   - Consider rate limiting and CSRF protection for forms.
 
-## Troubleshooting & common issues
+## Showcase on GitHub / Demo guidance
 
-- Ensure `ATLAS_URL` is correct and the IP whitelist allows connections (if using Atlas).
-- If images fail to upload, verify Cloudinary credentials and that `multer` uploads are successful.
-- If emails are not sent:
-  - If using Gmail, ensure you use an App Password for the account or configure OAuth2.
-  - Check `utils/emailTransporter.js` and the env values.
-- Socket.IO: if client isn't receiving events, confirm the client includes `<script src="/socket.io/socket.io.js"></script>` and that the browser is connecting to the same origin and port as the server.
+You've built and deployed the project — great work! Here are recommended steps and content to add to the README and GitHub repo so your project shows professionally on GitHub and is easy for others to evaluate:
 
-## Suggested next steps / improvements
+- Live demo link (already included): place the live URL near the top of the README and add a short label like **Live demo**. Example: `Live demo: https://expensemanagement-e6i4.onrender.com`.
+- Add a short demo GIF or screenshots: create a small `/assets` or `/screenshots` folder in the repo, add 2–4 screenshots (dashboard, add expense, manager review, user view) and reference them in README with markdown so they display on GitHub.
+- Add a Quick Demo (test) account section: document how someone can sign up or the demo accounts you seeded. If you prefer not to include real credentials, show the steps to create sample Admin/Manager/User via the `/auth` signup flow or a small `seed` script.
 
-- Move email credentials to `.env` and update `utils/emailTransporter.js` to use `process.env`.
-- Add tests for controllers and socket event emissions.
-- Add rate limiting and input sanitization beyond Joi where necessary.
-- Add a health-check endpoint and a `Procfile` for platforms like Heroku.
-- Dockerize the app for consistent deployments.
+Example block to include in README for quick testers:
 
-## Contact & contribution
+```
+Quick demo steps
 
-If you want to contribute, fork the repository, create a branch and open a PR. Provide precise steps and a short description of your change.
+1. Open the Live demo: https://expensemanagement-e6i4.onrender.com
+2. Click Sign Up and create a company + admin (or use seeded accounts if available).
+3. Create managers and users from the Admin dashboard.
+4. Sign-in as a User and submit an expense (attach a receipt). Then sign in as the assigned Manager to review/approve/reject and watch real-time updates.
+```
+
+- Add a short Deployment / CI section showing how to deploy (Render, Heroku, Vercel for static front-end + server elsewhere), or include your GitHub Actions workflow if you use CI/CD.
+- Add badges at the top of README (optional): Node version, build status, license, and live demo. Example markup:
+
+```
+[![Node.js](https://img.shields.io/badge/node-24.8.0-brightgreen)]()
+[![Live demo](https://img.shields.io/badge/demo-online-blue)](https://expensemanagement-e6i4.onrender.com)
+```
+
+- Add a short **Features / Highlights** section at the top (1–2 lines) so visitors immediately see real-time updates, image uploads, role-based auth, and email notifications.
+
+If you'd like, I can:
+- Add a `screenshots/` folder and insert sample screenshot links (you'd need to upload images or give me images to add).
+- Add a `seed` script to create a demo company + admin + manager + user and document quick demo credentials.
+- Add a small `CONTRIBUTING.md` with how to run the app locally and how to prepare PRs.
 
 ---
 
