@@ -136,6 +136,7 @@
 
         .full-width {
             grid-column: 1 / -1;
+            overflow-x: auto;
         }
 
         .expense-table {
