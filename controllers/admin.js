@@ -9,6 +9,10 @@ const Company = require("../models/company.js");
 const ExpressError = require("../utils/expressError.js");
 const nodemailer = require("nodemailer");
 const { transporter } = require("../utils/emailTransporter.js");
+const Sib = require('sib-api-v3-sdk');
+const client = Sib.ApiClient.instance;
+client.authentications['api-key'].apiKey = process.env.ExpenseHub_API;
+const tranEmailApi = new Sib.TransactionalEmailsApi();
 
 module.exports.index = async (req, res) => {
   let { id, adminId } = req.params;
@@ -105,24 +109,35 @@ module.exports.addUser = async (req, res) => {
 
 
 
-  const mailOptions = {
-    from: "nisargpatel460@gmail.com",
-    to: email,
-    subject: "Your ExpenseHub Account Credentials",
-    text: `Hello ${name}, welcome to our service!
-    Your account has been created with the following credentials: 
-    Email: ${email}
-    Password: ${password}`
-  };
+  // const mailOptions = {
+  //   from: "nisargpatel460@gmail.com",
+  //   to: email,
+  //   subject: "Your ExpenseHub Account Credentials",
+  //   text: `Hello ${name}, welcome to our service!
+  //   Your account has been created with the following credentials: 
+  //   Email: ${email}
+  //   Password: ${password}`
+  // };
 
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      // console.error(error);
-      throw new ExpressError("500", error.message);
-    } else {
-      console.log("Email sent: " + info.response);
-    }
-  });
+  try {
+    const sender = { email: 'nisargpatel460@gmail.com', name: 'ExpenseHub' };
+    const receivers = [{ email }];
+
+    const response = await tranEmailApi.sendTransacEmail({
+      sender,
+      to: receivers,
+      subject: 'Your ExpenseHub Account Credentials',
+      htmlContent: `<p>Hello ${name}, welcome to ExpenseHub!<br>
+      Your account has been created with the following credentials:<br>
+      <b>Email:</b> ${email}<br>
+      <b>Password:</b> ${password}</p>`
+    });
+
+    console.log('Email sent:', response);
+  } catch (e) {
+    console.error('Error sending email:', error);
+    next(new ExpressError(500, "email error"));
+  }
 
   res.redirect(`/companies/${id}/admins/${adminId}`);
 }
@@ -157,14 +172,37 @@ module.exports.destroyUser = async (req, res, next) => {
     ExpenseHub Team`
   };
 
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      // console.error(error);
-      throw new ExpressError("500", error.message);
-    } else {
-      console.log("Email sent: " + info.response);
-    }
-  });
+  try {
+    const sender = { email: 'nisargpatel460@gmail.com', name: 'ExpenseHub' };
+    const receivers = [{ email: user.email }];
+
+    const response = await tranEmailApi.sendTransacEmail({
+      sender,
+      to: receivers,
+      subject: 'Account Deletion Notification',
+      htmlContent: `
+        <p>Hello ${user.name},</p>
+        <p>We wanted to inform you that your account has been deleted from our <b>ExpenseHub</b> system.</p>
+        <p>If you have any questions or concerns, please feel free to reach out to us.</p>
+        <br>
+        <p>Best regards,<br>
+        <b>ExpenseHub Team</b></p>
+      `,
+      textContent: `Hello ${user.name},
+
+      We wanted to inform you that your account has been deleted from our ExpenseHub system.
+      If you have any questions or concerns, please feel free to reach out to us.
+
+Best regards,
+ExpenseHub Team`
+    });
+
+    console.log('✅ Account deletion email sent:', response);
+  } catch (error) {
+    console.error('❌ Failed to send account deletion email:', error);
+  }
+
+
 
   res.redirect(`/companies/${id}/admins/${adminId}`);
   // res.send("user deleted sucussfull");
@@ -199,7 +237,7 @@ module.exports.editUser = async (req, res, next) => {
   await User.findByIdAndUpdate(userId, { managerId: managerId });
 
   if (user.role === "user" && req.body.expense.role === "manager") {
-    if(!user.email) {
+    if (!user.email) {
       return next(new ExpressError(400, "Email is required to promote user to manager"));
     }
     let newManager = await new Manager({ companyId: user.companyId, adminId: user.adminId, name: req.body.expense.name, email: user.email });
@@ -232,32 +270,57 @@ module.exports.editUser = async (req, res, next) => {
   console.log(newUser);
   let details = (await newUser.populate("managerId")).toObject();
 
-  const mailOptions = {
-    from: "nisargpatel460@gmail.com",
-    to: user.email,
-    subject: "Edited User Info",
-    text: `Your Edited Info,
-    Name: ${details.name}
-    Role: ${details.role}
-    Assigned Manager: ${details.managerId ? details.managerId.name : "No Manager Assigned"}
+  // const mailOptions = {
+  //   from: "nisargpatel460@gmail.com",
+  //   to: user.email,
+  //   subject: "Edited User Info",
+  //   text: `Your Edited Info,
+  //   Name: ${details.name}
+  //   Role: ${details.role}
+  //   Assigned Manager: ${details.managerId ? details.managerId.name : "No Manager Assigned"}
 
-    Best regards,
-    ExpenseHub Team`
-  };
+  //   Best regards,
+  //   ExpenseHub Team`
+  // };
 
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      // console.error(error);
-      throw new ExpressError("500", error.message);
-    } else {
-      console.log("Email sent: " + info.response);
-    }
-  });
+    try {
+    const sender = { email: 'nisargpatel460@gmail.com', name: 'ExpenseHub' };
+    const receivers = [{ email: user.email }];
 
+    const managerName = details.managerId ? details.managerId.name : "No Manager Assigned";
+
+    const response = await tranEmailApi.sendTransacEmail({
+      sender,
+      to: receivers,
+      subject: 'Edited User Info',
+      htmlContent: `
+        <p>Hello ${details.name},</p>
+        <p>Your user information has been updated in <b>ExpenseHub</b>.</p>
+        <p>
+          <b>Name:</b> ${details.name}<br>
+          <b>Role:</b> ${details.role}<br>
+          <b>Assigned Manager:</b> ${managerName}
+        </p>
+        <br>
+        <p>Best regards,<br><b>ExpenseHub Team</b></p>
+      `,
+      textContent: `Your Edited Info,
+Name: ${details.name}
+Role: ${details.role}
+Assigned Manager: ${managerName}
+
+Best regards,
+ExpenseHub Team`
+    });
+
+    console.log('✅ Edited user info email sent:', response);
+  } catch (error) {
+    console.error('❌ Failed to send edited user info email:', error);
+  }
 
   res.redirect(`/companies/${id}/admins/${adminId}`);
   // res.send("updated");
-} 
+}
 
 module.exports.getUser = async (req, res) => {
   let { reqUserId } = req.params;
