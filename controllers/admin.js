@@ -115,14 +115,14 @@ module.exports.addUser = async (req, res) => {
     Password: ${password}`
   };
 
-  // transporter.sendMail(mailOptions, (error, info) => {
-  //   if (error) {
-  //     // console.error(error);
-  //     throw new ExpressError("500", error.message);
-  //   } else {
-  //     console.log("Email sent: " + info.response);
-  //   }
-  // });
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      // console.error(error);
+      throw new ExpressError("500", error.message);
+    } else {
+      console.log("Email sent: " + info.response);
+    }
+  });
 
   res.redirect(`/companies/${id}/admins/${adminId}`);
 }
@@ -157,14 +157,14 @@ module.exports.destroyUser = async (req, res, next) => {
     ExpenseHub Team`
   };
 
-  // transporter.sendMail(mailOptions, (error, info) => {
-  //   if (error) {
-  //     // console.error(error);
-  //     throw new ExpressError("500", error.message);
-  //   } else {
-  //     console.log("Email sent: " + info.response);
-  //   }
-  // });
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      // console.error(error);
+      throw new ExpressError("500", error.message);
+    } else {
+      console.log("Email sent: " + info.response);
+    }
+  });
 
   res.redirect(`/companies/${id}/admins/${adminId}`);
   // res.send("user deleted sucussfull");
@@ -245,14 +245,14 @@ module.exports.editUser = async (req, res, next) => {
     ExpenseHub Team`
   };
 
-  // transporter.sendMail(mailOptions, (error, info) => {
-  //   if (error) {
-  //     // console.error(error);
-  //     throw new ExpressError("500", error.message);
-  //   } else {
-  //     console.log("Email sent: " + info.response);
-  //   }
-  // });
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      // console.error(error);
+      throw new ExpressError("500", error.message);
+    } else {
+      console.log("Email sent: " + info.response);
+    }
+  });
 
 
   res.redirect(`/companies/${id}/admins/${adminId}`);
