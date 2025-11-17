@@ -7,8 +7,6 @@ const Expense = require("../models/expense.js");
 const Manager = require("../models/manager.js");
 const Company = require("../models/company.js");
 const ExpressError = require("../utils/expressError.js");
-const nodemailer = require("nodemailer");
-const { transporter } = require("../utils/emailTransporter.js");
 const Sib = require('sib-api-v3-sdk');
 const client = Sib.ApiClient.instance;
 client.authentications['api-key'].apiKey = process.env.ExpenseHub_API;
@@ -136,7 +134,7 @@ module.exports.addUser = async (req, res) => {
     console.log('Email sent:', response);
   } catch (e) {
     console.error('Error sending email:', error);
-    next(new ExpressError(500, "email error"));
+    // next(new ExpressError(500, "email error"));
   }
 
   res.redirect(`/companies/${id}/admins/${adminId}`);
@@ -197,9 +195,9 @@ Best regards,
 ExpenseHub Team`
     });
 
-    console.log('✅ Account deletion email sent:', response);
+    console.log('Account deletion email sent:', response);
   } catch (error) {
-    console.error('❌ Failed to send account deletion email:', error);
+    console.error(' Failed to send account deletion email:', error);
   }
 
 
