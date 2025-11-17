@@ -107,24 +107,35 @@ module.exports.addUser = async (req, res) => {
 
 
 
-  const mailOptions = {
-    from: "nisargpatel460@gmail.com",
-    to: email,
-    subject: "Your ExpenseHub Account Credentials",
-    text: `Hello ${name}, welcome to our service!
-    Your account has been created with the following credentials: 
-    Email: ${email}
-    Password: ${password}`
-  };
+  // const mailOptions = {
+  //   from: "nisargpatel460@gmail.com",
+  //   to: email,
+  //   subject: "Your ExpenseHub Account Credentials",
+  //   text: `Hello ${name}, welcome to our service!
+  //   Your account has been created with the following credentials: 
+  //   Email: ${email}
+  //   Password: ${password}`
+  // };
 
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      // console.error(error);
-      throw new ExpressError("500", error.message);
-    } else {
-      console.log("Email sent: " + info.response);
-    }
-  });
+  try {
+    const sender = { email: 'nisargpatel460@gmail.com', name: 'ExpenseHub' };
+    const receivers = [{ email }];
+
+    const response = await tranEmailApi.sendTransacEmail({
+      sender,
+      to: receivers,
+      subject: 'Your ExpenseHub Account Credentials',
+      htmlContent: `<p>Hello ${name}, welcome to ExpenseHub!<br>
+      Your account has been created with the following credentials:<br>
+      <b>Email:</b> ${email}<br>
+      <b>Password:</b> ${password}</p>`
+    });
+
+    console.log('Email sent:', response);
+  } catch (e) {
+    console.error('Error sending email:', error);
+    // next(new ExpressError(500, "email error"));
+  }
 
   res.redirect(`/companies/${id}/admins/${adminId}`);
 }
@@ -159,14 +170,37 @@ module.exports.destroyUser = async (req, res, next) => {
     ExpenseHub Team`
   };
 
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      // console.error(error);
-      throw new ExpressError("500", error.message);
-    } else {
-      console.log("Email sent: " + info.response);
-    }
-  });
+  try {
+    const sender = { email: 'nisargpatel460@gmail.com', name: 'ExpenseHub' };
+    const receivers = [{ email: user.email }];
+
+    const response = await tranEmailApi.sendTransacEmail({
+      sender,
+      to: receivers,
+      subject: 'Account Deletion Notification',
+      htmlContent: `
+        <p>Hello ${user.name},</p>
+        <p>We wanted to inform you that your account has been deleted from our <b>ExpenseHub</b> system.</p>
+        <p>If you have any questions or concerns, please feel free to reach out to us.</p>
+        <br>
+        <p>Best regards,<br>
+        <b>ExpenseHub Team</b></p>
+      `,
+      textContent: `Hello ${user.name},
+
+      We wanted to inform you that your account has been deleted from our ExpenseHub system.
+      If you have any questions or concerns, please feel free to reach out to us.
+
+Best regards,
+ExpenseHub Team`
+    });
+
+    console.log('Account deletion email sent:', response);
+  } catch (error) {
+    console.error(' Failed to send account deletion email:', error);
+  }
+
+
 
   res.redirect(`/companies/${id}/admins/${adminId}`);
   // res.send("user deleted sucussfull");
@@ -273,19 +307,14 @@ Name: ${details.name}
 Role: ${details.role}
 Assigned Manager: ${managerName}
 
-    Best regards,
-    ExpenseHub Team`
-  };
+Best regards,
+ExpenseHub Team`
+    });
 
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      // console.error(error);
-      throw new ExpressError("500", error.message);
-    } else {
-      console.log("Email sent: " + info.response);
-    }
-  });
-
+    console.log('Edited user info email sent:', response);
+  } catch (error) {
+    console.error(' Failed to send edited user info email:', error);
+  }
 
   res.redirect(`/companies/${id}/admins/${adminId}`);
   // res.send("updated");
