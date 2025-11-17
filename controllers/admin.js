@@ -311,9 +311,9 @@ Best regards,
 ExpenseHub Team`
     });
 
-    console.log('✅ Edited user info email sent:', response);
+    console.log('Edited user info email sent:', response);
   } catch (error) {
-    console.error('❌ Failed to send edited user info email:', error);
+    console.error(' Failed to send edited user info email:', error);
   }
 
   res.redirect(`/companies/${id}/admins/${adminId}`);
