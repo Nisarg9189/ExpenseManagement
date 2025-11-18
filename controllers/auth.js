@@ -7,8 +7,12 @@ const Admin = require("../models/admin.js");
 const Manager = require("../models/manager.js");
 const ExpressError = require("../utils/expressError.js");
 const Company = require("../models/company.js");
-const {signUp} = require("../schema.js");
+const { signUp } = require("../schema.js");
 const { model } = require("mongoose");
+const Sib = require('sib-api-v3-sdk');
+const client = Sib.ApiClient.instance;
+client.authentications['api-key'].apiKey = process.env.ExpenseHub_API;
+const tranEmailApi = new Sib.TransactionalEmailsApi();
 
 module.exports.login = async (req, res, next) => {
   // console.log(req.user);
@@ -33,7 +37,7 @@ module.exports.login = async (req, res, next) => {
   }
 };
 
-module.exports.signup =  async (req, res, next) => {
+module.exports.signup = async (req, res, next) => {
   try {
     const { name, address, adminname, email, password } = req.body.company;
 
@@ -60,16 +64,35 @@ module.exports.signup =  async (req, res, next) => {
     await newAdmin.save();
     // Redirect after successful registration
     // res.redirect(`/companies/${newCompany._id}/admins/${newAdmin._id}`);
+    try {
+      const sender = { email: 'nisargpatel460@gmail.com', name: 'ExpenseHub' };
+      const receivers = [{ email }];
+
+      const response = await tranEmailApi.sendTransacEmail({
+        sender,
+        to: receivers,
+        subject: 'Your ExpenseHub Account Credentials',
+        htmlContent: `<p>Hello ${adminname}, welcome to ExpenseHub!<br>
+      Your account has been created with the following credentials:<br>
+      <b>Email:</b> ${email}<br>
+      <b>Password:</b> ${password}</p>`
+      });
+
+      console.log('Email sent:', response);
+    } catch (e) {
+      console.error('Error sending email:', error);
+      // next(new ExpressError(500, "email error"));
+    }
     return res.redirect("/");
   } catch (e) {
     next(new ExpressError(400, "Wrong credentials"));
   }
 };
 
-module.exports.logout = async(req, res) => {
-  if(req.isAuthenticated()) {
+module.exports.logout = async (req, res) => {
+  if (req.isAuthenticated()) {
     req.logout((err) => {
-      if(err) {
+      if (err) {
         throw new ExpressError(500, "Something went wrong while logging out!");
       }
       req.flash("success", "Logged out successfully!");
